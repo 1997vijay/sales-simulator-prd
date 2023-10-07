@@ -17,6 +17,8 @@ from streamlit.logger import get_logger
 import json
 import requests
 import re
+import secrets
+from datetime import datetime
 
 LOGGER = get_logger(__name__)
 
@@ -26,6 +28,14 @@ st.set_page_config(
     page_icon="💰",
     layout='wide'
 )
+def generate_invoice_number(length=20):
+    # Define characters to use in the invoice number (you can customize this)
+    characters = "0123456789ABCDEFGHIJKLMNOP"
+
+    # Use secrets.choice() to randomly select characters
+    invoice_number = ''.join(secrets.choice(characters) for _ in range(length))
+    return invoice_number
+
 def validate_base_url(base_url):
     # Define a regular expression pattern for a valid base URL
     pattern = r"https?://[A-Za-z0-9.-]+(?:\:[0-9]+)?(?:[/?].*)?"
@@ -163,6 +173,10 @@ def run():
                     },
                     "Promo Codes or Discounts": {
                         "Promo Code": promo_code,
+                    },
+                    "Invoice Details": {
+                        "Invoice Number":generate_invoice_number(length=20),
+                        "Invoice Date":str(datetime.now())
                     }
                 }
 
