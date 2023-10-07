@@ -43,7 +43,7 @@ def send_to_api(data,url):
             header={
                 "Content-Type":"application/json"
             }
-            response=requests.post(url=base_url,data=json.dumps(data),headers=header)
+            response=requests.post(url=base_url,data=data,headers=header)
         except Exception as e:
                 st.warning(f'{e}')
     except Exception as e:
