@@ -19,6 +19,8 @@ import requests
 import re
 import secrets
 from datetime import datetime
+from azure.iot.device.aio import IoTHubDeviceClient
+import asyncio
 
 LOGGER = get_logger(__name__)
 
@@ -59,25 +61,47 @@ def send_to_api(data,url):
     except Exception as e:
         st.warning(f'{e}')
 
+async def send_to_iot_hub(data,connectionString):
+    try:
+        # Create an instance of the IoT Hub Client class
+        device_client = IoTHubDeviceClient.create_from_connection_string(connectionString)
+        await device_client.connect()
+
+        await device_client.send_message(data)
+        print("Message sent to IoT Hub:", data)
+    except Exception as e:
+        print("Error:", str(e))
+    finally:
+        # Shutdown the client
+        await device_client.shutdown()
+
+
 def run():
     st.title("Sales Simulator")
-    markdown_text = """
-    :red[Note: ] The application uses the POST method to send data through the API. 
-    Please ensure that your API is configured to accept data in JSON object format.
-    """
-    st.info(markdown_text)
+    # markdown_text = """
+    # :red[Note: ] The application uses the POST method to send data through the API. 
+    # Please ensure that your API is configured to accept data in JSON object format.
+    # """
+    # st.info(markdown_text)
 
     # set api url
     api_url=''
-    api_url=st.text_input("Enter API url")
+    # api_url=st.text_input("Enter API url")
+    api_url=st.text_input("Enter IOT HUB connection string")
 
-    if st.button('set API',type='primary'):
+    # if st.button('set API',type='primary'):
+    #     if api_url!=None and api_url!='':
+    #         if not validate_base_url(api_url):
+    #             st.warning("Invalid API base URL. Please provide a valid URL.")
+    #         else:
+    #             api_url=api_url
+    #             st.success(f"API {api_url} integrated successfully!")
+    #     else:
+    #         st.info(f"API can not be blanked!")
+    if st.button('set IOT Hub',type='primary'):
         if api_url!=None and api_url!='':
-            if not validate_base_url(api_url):
-                st.warning("Invalid API base URL. Please provide a valid URL.")
-            else:
-                api_url=api_url
-                st.success(f"API {api_url} integrated successfully!")
+            api_url=api_url
+            st.success(f"API {api_url} integrated successfully!")
         else:
             st.info(f"API can not be blanked!")
         
@@ -185,7 +209,8 @@ def run():
 
         # call rest api
         try:
-            send_to_api(data=json_data,url=api_url)
+            # send_to_api(data=json_data,url=api_url)
+            asyncio.run(send_to_iot_hub(data=json_data,connectionString=api_url))
             st.success("Order placed successfully!")
         except Exception as e:
             st.warning(f'Something went wrong!!,{e}')
